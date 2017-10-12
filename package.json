@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Reconnois/iw1_QUIRIN_Guillaume#readme",
   "dependencies": {
     "botbuilder": "^3.9.1",
+    "botbuilder-cognitiveservices": "^1.1.0",
     "restify": "^5.2.0"
   }
 }
