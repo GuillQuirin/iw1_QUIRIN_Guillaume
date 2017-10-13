@@ -38,22 +38,22 @@ var menuItems = {
 
 var alarms = {
     "defautAlarm": {
-        date: "01/01/1970 00:00:01",
-        nom: "defaut",
+        date: "02/02/1980 00:00:01",
+        nom: "alarme test 1",
         statut: 0,
         createur: "defaultCreator"
     },
     "defautAlarm2": {
         date: "01/01/1970 00:00:01",
-        nom: "defaut",
+        nom: "alarme test 2",
         statut: 0,
-        createur: "defaultCreator"
+        createur: "defaultCreator1"
     },
     "defautAlarm3": {
-        date: "01/01/1970 00:00:01",
-        nom: "defaut",
+        date: "03/03/2000 00:00:01",
+        nom: "alarme test 3",
         statut: 1,
-        createur: "defaultCreator"
+        createur: "defaultCreator2"
     }
 };
 
@@ -72,22 +72,10 @@ bot.dialog('greetings',[
 		session.beginDialog('mainMenu');
 	},
 	function (session, results){
-
+        session.send("Vous pouvez : retourner au menu principal");
 	}
-]);
-
-bot.dialog("mainMenu", [
-    function(session){
-        botbuilder.Prompts.choice(session, "Menu principal", menuItems, { listStyle: botbuilder.ListStyle.button });
-    },
-    function(session, results){
-        if(results.response){
-            session.beginDialog(menuItems[results.response.entity].item);
-        }
-    }
 ]).triggerAction({
     matches: /^menu principal$/i,
-    confirmPrompt: "Vous allez retourner au menu, êtes-vous sûr ?"
 }).reloadAction(
     "restart", "Ok recommençons",
     {
@@ -102,17 +90,36 @@ bot.dialog("mainMenu", [
     }
 );
 
+
+bot.dialog("mainMenu", [
+    function(session){
+        botbuilder.Prompts.choice(session, "Menu principal", menuItems, { listStyle: botbuilder.ListStyle.button });
+    },
+    function(session, results){
+        if(results.response){
+            session.beginDialog(menuItems[results.response.entity].item);
+        }
+    },
+    function(session){
+        session.replaceDialog("mainMenu", { reprompt: true });
+    }
+]);
+
 bot.dialog('dialogCreate', [
 	function (session){
         session.send("-----CREATION-----");
 		botbuilder.Prompts.text(session, "Nom de l'alarme ?");
 	},
 	function (session, results){
-        session.conversationData.newalarm.nom = session.results;
+        session.conversationData.newalarm.nom = results.response;
         botbuilder.Prompts.choice(session, "Activer l'alarme ?", "oui|non", { listStyle: botbuilder.ListStyle.button });
     },
     function (session, results){
         session.conversationData.newalarm.statut = session.results;
+        botbuilder.Prompts.time(session, "Quand souhaitez-vous activer l'alarme ?");
+    },
+    function (session, results){
+        session.conversationData.newalarm.date = botbuilder.EntityRecognizer.resolveTime([results.response]);
         session.conversationData.newalarm.createur = session.conversationData.profile.name;
 
         var size = Object.keys(alarms).length+1;
@@ -120,7 +127,7 @@ bot.dialog('dialogCreate', [
         alarms['alarm'+size].nom = session.conversationData.newalarm.nom;
         alarms['alarm'+size].statut = session.conversationData.statut;
         alarms['alarm'+size].createur = session.conversationData.newalarm.createur;
-        //alarms['alarm'+size].date = session.conversationData.newalarm.date;
+        alarms['alarm'+size].date = session.conversationData.newalarm.date;
         
         session.send("Nombre d'alarmes créées : "+size);
         session.endDialog();
