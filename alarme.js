@@ -59,9 +59,10 @@ var alarms = {
 
 bot.dialog('greetings',[
 	function (session, args, next){
-		session.conversationData.profile = args || {};
+        session.conversationData.profile = args || {};
+        session.conversationData.newalarm = {};
 		if(!session.conversationData.profile.name)
-			session.beginDialog('askName');
+            botbuilder.Prompts.text(session, 'Bonjour, quel est ton nom ?');
 		else
 			next();
 	},
@@ -74,16 +75,6 @@ bot.dialog('greetings',[
 
 	}
 ]);
-
-bot.dialog('askName', [
-	function (session){
-		botbuilder.Prompts.text(session, 'Bonjour, quel est ton nom ?');
-	},
-	function (session, results){
-		session.endDialogWithResult(results);
-	}
-]);
-
 
 bot.dialog("mainMenu", [
     function(session){
@@ -122,13 +113,16 @@ bot.dialog('dialogCreate', [
     },
     function (session, results){
         session.conversationData.newalarm.statut = session.results;
-        botbuilder.Prompts.text(session, "Nom du créateur de l'alarme ?");
-    },
-    function (session, results){
-        //session.conversationData.newalarm.createur = session.results;
-        //botbuilder.Prompts.choice(session, "Activer l'alarme ?", "oui|non", { listStyle: botbuilder.ListStyle.button });
-        session.conversationData.list.count = Object.keys(alarms).length+1;
-        alarm['alarm'+session.conversationData.newalarm.count] = session.conversationData.newalarm;
+        session.conversationData.newalarm.createur = session.conversationData.profile.name;
+
+        var size = Object.keys(alarms).length+1;
+        alarms['alarm'+size] = {};
+        alarms['alarm'+size].nom = session.conversationData.newalarm.nom;
+        alarms['alarm'+size].statut = session.conversationData.statut;
+        alarms['alarm'+size].createur = session.conversationData.newalarm.createur;
+        //alarms['alarm'+size].date = session.conversationData.newalarm.date;
+        
+        session.send("Nombre d'alarmes créées : "+size);
         session.endDialog();
     }
 ]);
@@ -140,7 +134,8 @@ bot.dialog('dialogSee', [
             if(alarms[alarm].statut){
                 msg =  "Alarme '"+alarm+"'<br>";
                 msg += "Nom : '"+alarms[alarm].nom+"'<br>";
-                msg += "Statut : "+alarms[alarm].statut+"'<br>";
+                msg += "Statut : ";
+                msg += (alarms[alarm].statut) ? "active<br>" : "inactive<br>";
                 msg += "Createur : "+alarms[alarm].createur+"<br>";
                 msg += "Date : "+alarms[alarm].date;
                 session.send(msg);
@@ -159,7 +154,8 @@ bot.dialog('dialogAll', [
         for(var alarm in alarms){
             msg =  "Alarme '"+alarm+"'<br>";
             msg += "Nom : '"+alarms[alarm].nom+"'<br>";
-            msg += "Statut : "+alarms[alarm].statut+"'<br>";
+            msg += "Statut : ";
+            msg += (alarms[alarm].statut) ? "active<br>" : "inactive<br>";
             msg += "Createur : "+alarms[alarm].createur+"<br>";
             msg += "Date : "+alarms[alarm].date;
             session.send(msg);
