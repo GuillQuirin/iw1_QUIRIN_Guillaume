@@ -155,6 +155,8 @@ bot.dialog('dialogSee', [
 ]);
 
 
+
+
 bot.dialog('dialogAll', [
     function (session){
         var msg = "";

@@ -106,5 +106,4 @@ library.dialog('stop', [
 	}
 ]);
 
-
 module.exports = library;
