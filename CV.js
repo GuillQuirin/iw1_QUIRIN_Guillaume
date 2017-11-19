@@ -34,7 +34,7 @@ var menuItems = {
         item: "resumeDescription"
     },
     "Ses différents projets (carroussel)": {
-        item: "resumeProjects"
+        item: "listProjects"
     },
     "Les langages de programmation acquis (LUIS)": {
         item: "resumeLanguage"
@@ -86,7 +86,7 @@ bot.dialog('resumeDescription', [
 		botbuilder.Prompts.number(session, 'How many are you ?');
     },
 	function (session, results){
-        session.send("Que souhaitez-vous faire ensuite ?");
+        botbuilder.Prompts.text(session, "Que souhaitez-vous faire ensuite ?");
 		session.endDialogWithResult(results);
 	}
 ]);
@@ -187,7 +187,7 @@ bot.dialog('resumeCard', [
                                 "items": [
                                     {
                                         "type": "TextBlock",
-                                        "text": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+                                        "text": "Guillaume QUIRIN est un étudiant en informatique à l'ESGI spécialisé dans le développement d'applications Web.",
                                         "wrap": true
                                     },
                                     {
@@ -255,7 +255,7 @@ bot.dialog('resumeCard', [
 /* Dialogue de LUIS */
 bot.dialog('resumeLanguage', [
 	function(session, args, next){
-        session.send("Vous pouvez demander si un langage qui vous intéresse a été appris :");
+        session.send("Vous pouvez me demander quel langage Guillaume a-t-il appris :");
         session.endDialog();
     }
 ]);
@@ -268,27 +268,22 @@ bot.dialog('Luis', [
         var attribute = "";
         
         switch(intent.intent){
-            case 'Weather.GetCondition':
-                attribute = 'Weather.Location';
-                break;
-
-            case 'Weather.GetForecast':
-                attribute = 'Weather.Location';
-                break;
-
-            case 'Events.Book':
-                attribute = 'Events.Name';
-                break;
-            
             case 'Resume.GetLanguage':
                 attribute = 'Resume.Language';
+                break;
+
+            case 'None':
+            default:
+                attribute = '';
                 break;
         }
 
         if(attribute != ""){
             var infosEntity = botbuilder.EntityRecognizer.findEntity(intent.entities, attribute);
-            if(infosEntity!=null)
-                session.send('intent : '+intent.intent+' || location : '+infosEntity.entity);
+            if(infosEntity!=null && infosEntity.entity != "Resume.GetLanguage"){
+                session.conversationData.filter = infosEntity.entity;
+                session.beginDialog("listProjects");
+            }
             else
                 session.send("Pas d'infos récupérées.");
         }
@@ -297,11 +292,14 @@ bot.dialog('Luis', [
         next();
     },
     function(session){
-        session.send("Que souhaitez-vous faire ensuite ?");
+        botbuilder.Prompts.text(session, "Que souhaitez-vous faire ensuite ?");
+	},
+    function(session, results){
+        session.conversationData.decision = results.response;
         session.endDialog();
-	}
+    }
 ]).triggerAction({
-	matches: ["Weather.GetCondition", "Weather.GetForecast", "Events.Book", "Resume.GetLanguage"]
+	matches: [/*"Weather.GetCondition", "Weather.GetForecast",*/ "Resume.GetLanguage"]
 }).cancelAction('CancelLuis', 'request canceled', {
 	matches: /^(cancel|abandonner)/i,
 	confirmPrompt: 'Are you sure ?'
@@ -309,47 +307,63 @@ bot.dialog('Luis', [
 
 var Projects = {
     1:{
-        "language": "PHP",
+        "language": ["php","laravel","mvc"],
         "title": "Club littéraire numérique",
+        "first": 1,
         "subtitle": "Projet Laravel de 4eme année",
         "text": "Réalisation d'un salon virtuel permettant aux utilisateurs de débattre d'une oeuvre",
         "image": "https://www.gqui.eu/wp-content/uploads/2017/08/screencapture-club-des-critiques.png",
         "url": "http://club-des-critiques.gqui.eu"
     },
-    2:{
-        "language": "PHP",
-        "title": "Club littéraire numérique",
-        "subtitle": "Projet Laravel de 4eme année",
-        "text": "Réalisation d'un salon virtuel permettant aux utilisateurs de débattre d'une oeuvre",
-        "image": "http://petersapparel.parseapp.com/img/whiteshirt.png",
-        "url": "http://club-des-critiques.gqui.eu"
-    },
     3:{
-        "language": "PHP",
-        "title": "Club littéraire numérique",
-        "subtitle": "Projet Laravel de 4eme année",
-        "text": "Réalisation d'un salon virtuel permettant aux utilisateurs de débattre d'une oeuvre",
+        "language": ["java"],
+        "title": "Raccourcisseur d'URL",
+        "first": 0,
+        "subtitle": "Projet Java / JEE de 4eme année",
+        "text": "Réalisation d'une application JEE sous Tomcat générant des URL raccourcies",
         "image": "http://petersapparel.parseapp.com/img/whiteshirt.png",
         "url": "http://club-des-critiques.gqui.eu"
     },
 };
 
 // Add dialog to return list of shirts available
-bot.dialog('resumeProjects', function (session) {
+bot.dialog('listProjects', function (session) {
+    var filter = (session.conversationData.filter != null) ? "en "+session.conversationData.filter : "";
+    session.send('Voici les projets développés par Guillaume '+filter+' :');
+
     var msg = new botbuilder.Message(session);
     msg.attachmentLayout(botbuilder.AttachmentLayout.carousel);
+
     var listProjects = [];
     for(var projet in Projects){
-        var HeroCard = new botbuilder.HeroCard(session)
-                        .title(Projects[projet].title)
-                        .subtitle(Projects[projet].subtitle)
-                        .text(Projects[projet].text)
-                        .images([botbuilder.CardImage.create(session, Projects[projet].image)])
-                        .buttons([
-                            botbuilder.CardAction.imBack(session, "buy classic white t-shirt", "Buy")
-                        ]);
-        listProjects.push(HeroCard);
+        var insert = false;
+
+        if(session.conversationData.filter != null && Projects[projet].language.indexOf(session.conversationData.filter) != -1)
+            insert = true;
+        else if(session.conversationData.filter == null)
+            insert = true;
+
+        if(insert){
+            var HeroCard = new botbuilder.HeroCard(session)
+                                .title(Projects[projet].title)
+                                .subtitle(Projects[projet].subtitle)
+                                .text(Projects[projet].text)
+                                .images([botbuilder.CardImage.create(session, Projects[projet].image)])
+                                .buttons([
+                                    botbuilder.CardAction.openUrl(session, Projects[projet].url, "Consulter le projet")
+                                ]);
+            listProjects.push(HeroCard);
+        }
     }
-    msg.attachments(listProjects);
-    session.send(msg).endDialog();
+    console.log("----Longueur liste langages----"+listProjects.length);
+
+    //Réinitialisation du filtre de recherche
+    session.conversationData.filter = null;
+    if(listProjects.length<=0)
+        msg = "Aucun projet n'a été trouvé.";
+    else
+        msg.attachments(listProjects);
+    
+    session.send(msg);
+    session.endDialog();
 }).triggerAction({ matches: /^(projects)/i });
