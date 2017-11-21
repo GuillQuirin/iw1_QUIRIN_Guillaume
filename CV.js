@@ -30,7 +30,7 @@ bot.recognizer(luiRecognizer);
 
 /* MENU */
 var menuItems = {
-    "Résumé de Guillaume (texte)": {
+    "Présentation du candidat (texte)": {
         item: "resumeDescription"
     },
     "Ses différents projets (carroussel)": {
@@ -50,7 +50,7 @@ var menuItems = {
 //Accueil
 bot.dialog('greetings', [
 	function (session,args, next){
-        welcome = "Bienvenue sur le chatbot-CV de Guillaume, voici un aperçu de ce que je peux faire : ";
+        welcome = "Bienvenue sur le chatbot-CV du candidat, voici un aperçu de ce que je peux faire : ";
         session.send(welcome);
         //botbuilder.Prompts.attachment(session, "Upload a picture for me to transform.");
         session.beginDialog("Menu");
@@ -164,7 +164,7 @@ bot.dialog('resumeCard', [
                                                 "items": [
                                                     {
                                                         "type": "TextBlock",
-                                                        "text": "Guillaume QUIRIN",
+                                                        "text": "le candidat",
                                                         "weight": "bolder",
                                                         "wrap": true,
                                                         "size": "medium"
@@ -187,7 +187,7 @@ bot.dialog('resumeCard', [
                                 "items": [
                                     {
                                         "type": "TextBlock",
-                                        "text": "Guillaume QUIRIN est un étudiant en informatique à l'ESGI spécialisé dans le développement d'applications Web.",
+                                        "text": "le candidat est un étudiant en informatique à l'ESGI spécialisé dans le développement d'applications Web.",
                                         "wrap": true
                                     },
                                     {
@@ -255,7 +255,7 @@ bot.dialog('resumeCard', [
 /* Dialogue de LUIS */
 bot.dialog('resumeLanguage', [
 	function(session, args, next){
-        session.send("Vous pouvez me demander quel langage Guillaume a-t-il appris :");
+        session.send("Vous pouvez me demander quel langage le candidat a-t-il appris :");
         session.endDialog();
     }
 ]);
@@ -329,7 +329,7 @@ var Projects = {
 // Add dialog to return list of shirts available
 bot.dialog('listProjects', function (session) {
     var filter = (session.conversationData.filter != null) ? "en "+session.conversationData.filter : "";
-    session.send('Voici les projets développés par Guillaume '+filter+' :');
+    session.send('Voici les projets développés par le candidat '+filter+' :');
 
     var msg = new botbuilder.Message(session);
     msg.attachmentLayout(botbuilder.AttachmentLayout.carousel);
