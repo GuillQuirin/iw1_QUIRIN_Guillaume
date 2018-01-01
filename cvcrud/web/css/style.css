@@ -1,0 +1,58 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 11 déc. 2017, 09:55:29
+    Author     : Sanae BELHAJ
+*/
+.navbar-default{
+    background: #FFFFFF;
+}
+.lien{
+    color : #cccc00;
+}
+.card{
+    border: solid #cccc00;
+    min-height: 100px;
+    padding:12px;
+    border-radius: 10px;
+}
+.lien a{
+    color : #cccc00;
+}
+.lien a:hover, .lien a:focus{
+    color : #cccc00;
+    text-decoration: none;   
+}
+.link a{
+    background: #00ccff;
+}
+.link a:hover, .link a:focus{
+    color : #cccc00;
+    text-decoration: none;   
+}
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+    background:#cccc00;
+}
+.yellow-text{
+    color : #cccc00;
+}
+.yellow{
+    Background : #cccc00;
+}
+
+.thumbnail .caption {
+    padding: none; 
+    color: none; 
+}
+.panel-footer{
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+.panel-footer{
+     background : #cccc00;
+     border-color: #cccc00;
+}

@@ -1,0 +1,9 @@
+/cvcrud/nbproject/private/
+/cvcrud/Config.class.php
+//cvcrud/var/*
+/cvcrud/vendor/*
+# Parameters
+/cvcrud/app/config/parameters.yml
+/cvcrud/app/config/parameters.ini
+/cvcrud/app/config/parameters.prod.yml
+/cvcrud/\.idea/
