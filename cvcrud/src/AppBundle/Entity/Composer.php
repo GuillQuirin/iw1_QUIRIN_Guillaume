@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="participations")
  */
 
-class Participations{
+class Composer{
 
 	/**
     * @ORM\Column(type="integer")
@@ -23,34 +23,46 @@ class Participations{
     protected $id;
 
     /**
-    * @ORM\ManyToOne(targetEntity="Association", inversedBy="participations")
-    * @ORM\JoinColumn(name="association_id", referencedColumnName="id") 
+    * @ORM\ManyToOne(targetEntity="Projet", inversedBy="Composer")
+    * @ORM\JoinColumn(name="projet_id", referencedColumnName="id") 
     */
-    public $association_id;
+    public $projet_id;
 
     /**
-    * @ORM\ManyToOne(targetEntity="User", inversedBy="participations")
-    * @ORM\JoinColumn(name="user_id", referencedColumnName="id") 
+    * @ORM\ManyToOne(targetEntity="Langage", inversedBy="Composer")
+    * @ORM\JoinColumn(name="langage_id", referencedColumnName="id") 
     */
-    public $user_id;
+    public $langage_id;
 
-    /**
-    * @ORM\Column(type="datetime")
-    */
-	protected $date_crea;
+  
 
     public function __construct()
     {
-        $this->date_crea = new \DateTime();
     }
 
-    public function getId(){return $this->id;}
-    public function getAssociation_id(){return $this->association_id;}
-    public function getUser_id(){return $this->user_id;}
-	public function getDate_crea(){return $this->date_crea;}
+    function getId() {
+        return $this->id;
+    }
 
-    public function setId($id){$this->id = $id;}
-    public function setAssociation_id($association_id){$this->association_id = $association_id;}
-    public function setUser_id($user_id){$this->user_id = $user_id;}
-	public function setDate_crea($date_crea){$this->date_crea = $date_crea;}
+    function getProjet_id() {
+        return $this->projet_id;
+    }
+
+    function getLangage_id() {
+        return $this->langage_id;
+    }
+
+    function setId($id) {
+        $this->id = $id;
+    }
+
+    function setProjet_id($projet_id) {
+        $this->projet_id = $projet_id;
+    }
+
+    function setLangage_id($langage_id) {
+        $this->langage_id = $langage_id;
+    }
+
+
 }
