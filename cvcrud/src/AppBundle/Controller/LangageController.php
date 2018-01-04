@@ -57,7 +57,7 @@ class LangageController extends Controller{
        
     }
         /**
-     * @Route("/association/edit/{id}", name="edit_langage")
+     * @Route("/langage/edit/{id}", name="edit_langage")
      */
     public function editAction(Request $request, $id)
     {

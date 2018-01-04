@@ -4,7 +4,7 @@
     <div class="row">
                      
         <div class="col-xs-12 col-md-12">
-            <a href="{{ path("add_langage")}}">Ajouter un langage</a>
+            <a href="{{ path("add_langage")}}">Ajouter un projet </a>
             <table class="table table-striped datatable_esgi">
                 <thead>
                     <tr>
@@ -13,16 +13,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for langage in langages %}
+                    {% for projet in projets %}
                         <tr>
                             <td class="col s3">
-                                {{langage.nom}}
+                                {{projet.titre}}
                             </td>
                             <td class="col s3">
-                                <a href="{{path('delete_langage',{'id':langage.id})}}" class="orange-text text-lighten-2">
+                                {{projet.description}}
+                            </td>
+                            <td class="col s3">
+                                <a href="{{path('delete_langage',{'id':projet.id})}}" class="orange-text text-lighten-2">
                                     <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                                 </a>
-                                <a href="{{path('edit_langage',{'id':langage.id})}}" class="orange-text text-lighten-2">
+                                <a href="{{path('edit_langage',{'id':projet.id})}}" class="orange-text text-lighten-2">
                                     <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                                 </a>
                             </td>

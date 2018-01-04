@@ -9,9 +9,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Repository\ProjetRepository")
- * @ORM\Table(name="projet")
+ * @ORM\Entity()
  */
+
 
 class Projet{
 
@@ -26,10 +26,12 @@ class Projet{
      * @ORM\Column(type="string", length=100)
      */
     protected $titre;
-   /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    protected $prenium =0;
+    
+    /**
+    * @ORM\Column(type="boolean", options={"default":0})
+    */
+    
+    protected $premium;
    /**
      * @ORM\Column(type="string", length=100)
      */
@@ -50,8 +52,8 @@ class Projet{
         return $this->titre;
     }
 
-    function getPrenium() {
-        return $this->prenium;
+    function getPremium() {
+        return $this->premium;
     }
 
     function getDescription() {
@@ -74,8 +76,8 @@ class Projet{
         $this->titre = $titre;
     }
 
-    function setPrenium($prenium) {
-        $this->prenium = $prenium;
+    function setPremium($premium) {
+        $this->premium = $premium;
     }
 
     function setDescription($description) {
