@@ -49,10 +49,10 @@ class Candidat{
      */
 	protected $photo;
 	
-    /**
-    * @ORM\OneToMany(targetEntity="Staff", mappedBy="user")
-    */
-    protected $tocken;
+    /**/
+    // @ORM\OneToMany(targetEntity="Staff", mappedBy="user")
+    /**/
+    //protected $tocken;
 
 
     public function __construct()
