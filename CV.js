@@ -20,6 +20,26 @@ server.post('/api/messages', connector.listen());
 //Initialisation du bot
 var bot = new botbuilder.UniversalBot(connector, function(session){
     session.beginDialog('greetings');
+
+    //Connexion à l'API Web
+    var http = require('https');
+    var url = 'https://chatbot.gqui.eu/GET/123';
+    http.get(url, function(res){
+        var body = '';
+
+        res.on('data', function(chunk){
+            body += chunk;
+        });
+
+        res.on('end', function(){
+            session.dialogData.candidat = body.eleve;
+            session.dialogData.Projects = body.projects;
+            console.log(body);
+        });
+    }).on('error', function(e){
+          session.send("Got an error: ", e);
+          console.log("Got an error: ", e);
+    });
 });
 
 // LUIS
@@ -32,7 +52,7 @@ bot.dialog('projectsSearch', [
     function(session, args, next){
         //TODO
         //Duplication du tableau Projects
-        var tableau = Projects.slice(0);
+        var tableau = session.dialogData.Projects.slice(0);
         //
 
         var list = [];
@@ -67,7 +87,7 @@ bot.dialog('projectsSearch', [
     confirmPrompt: 'Etes-vous sur ?'
 });
 
-//TODO
+/*
 var Projects = [
     {
         "language": ["php","laravel","java"],
@@ -87,12 +107,12 @@ var Projects = [
         "image": "http://petersapparel.parseapp.com/img/whiteshirt.png",
         "url": "http://club-des-critiques.gqui.eu"
     },
-];
+];*/
 
 /* Récupération des projets principaux */
 bot.dialog('projectsList', function (session) {
     session.send('Voici les principaux projets développés par le candidat :');   
-    session.send(displayProject(Projects, session));
+    session.send(displayProject(session.dialogData.Projects, session));
     session.endDialog();
 }).triggerAction({ matches: /^(projects)/i });
 
@@ -148,7 +168,7 @@ var menuItems = {
 //Accueil
 bot.dialog('greetings', [
 	function (session,args, next){
-        session.send("Bienvenue sur le chatbot-CV du candidat, voici un aperçu de ce que vous pouvez faire : ");
+        session.send("Bienvenue sur le chatbot-CV de "+session.dialogData.candidat.prenom+" "+session.dialogData.candidat.nom+", voici un aperçu de ce que vous pouvez faire : ");
         session.beginDialog("Menu");
     },
 	function (session, results){
@@ -180,17 +200,13 @@ bot.dialog("Menu", [
 bot.dialog('resumeDescription', [
 	function (session, args, next){
         /*var msg = new botbuilder.Message(session)
-                        .speak('This is the text that will be spoken.');
-        session.send(msg);
-        */
-        var msg = new botbuilder.Message(session)
             .text("Here you go:")
             .attachments([{
                 contentType: "image/jpeg",
                 contentUrl: "http://www.theoldrobots.com/images62/Bender-18.JPG"
             }]);
-        session.send(msg);
-		session.send("Le candidat vient de ESGI. Il a suivi une filière Web en alternance.");
+        session.send(msg);*/
+		session.send(session.dialogData.candidat.description);
         session.endDialog();
     }
 ]);
@@ -213,7 +229,7 @@ bot.dialog('resumeCard', [
                             "items": [
                                 {
                                     "type": "TextBlock",
-                                    "text": "Développeur web full-stack",
+                                    "text": session.dialogData.candidat.metier,
                                     "weight": "bolder",
                                     "size": "large",
                                     "horizontalAlignment": "center"
@@ -227,7 +243,7 @@ bot.dialog('resumeCard', [
                                             "items": [
                                                 {
                                                     "type": "Image",
-                                                    "url": "https://media.licdn.com/mpr/mpr/shrinknp_400_400/AAEAAQAAAAAAAAYlAAAAJDc3MTZhYTU1LTI0ZTUtNDViNy1hYWFiLTFhODQwZmFmYzhlZQ.jpg",
+                                                    "url": session.dialogData.candidat.picture,
                                                     "size": "medium",
                                                     "style": "person",
                                                     "horizontalAlignment": "center"
@@ -240,17 +256,10 @@ bot.dialog('resumeCard', [
                                             "items": [
                                                 {
                                                     "type": "TextBlock",
-                                                    "text": "le candidat",
+                                                    "text": session.dialogData.candidat.nom+" "+session.dialogData.candidat.prenom,
                                                     "weight": "bolder",
                                                     "wrap": true,
                                                     "size": "medium"
-                                                },
-                                                {
-                                                    "type": "TextBlock",
-                                                    "spacing": "none",
-                                                    "text": "*Created {{DATE(2017-02-14T06:08:39Z,Short)}}*",
-                                                    "isSubtle": true,
-                                                    "wrap": true
                                                 }
                                             ]
                                         }
@@ -263,7 +272,7 @@ bot.dialog('resumeCard', [
                             "items": [
                                 {
                                     "type": "TextBlock",
-                                    "text": "le candidat est un étudiant en informatique à l'ESGI spécialisé dans le développement d'applications Web.",
+                                    "text": session.dialogData.candidat.description,
                                     "wrap": true
                                 },
                                 {
@@ -271,15 +280,15 @@ bot.dialog('resumeCard', [
                                     "facts": [
                                         {
                                             "title": "Entreprise actuelle :",
-                                            "value": "Régie Immobilière de la Ville de Paris (RIVP)"
+                                            "value": session.dialogData.candidat.entreprise
                                         },
                                         {
                                             "title": "Disponibilité :",
-                                            "value": "Septembre 2018"
+                                            "value": session.dialogData.candidat.disponibilite
                                         },
                                         {
                                             "title": "Localisation :",
-                                            "value": "Paris"
+                                            "value": session.dialogData.candidat.location
                                         }
                                     ]
                                 }
@@ -289,12 +298,12 @@ bot.dialog('resumeCard', [
                     "actions": [
                         {
                             "type": "Action.OpenUrl",
-                            "url": "https://www.gqui.eu/wp-content/uploads/2017/11/QUIRIN.pdf",
+                            "url": session.dialogData.candidat.cv,
                             "title": "Accéder au CV (URL)"
                         },
                         {
                             "type": "Action.OpenUrl",
-                            "url": "https://www.linkedin.com/in/gqui-fr/",
+                            "url": session.dialogData.candidat.linkedin,
                             "title": "Accéder au Linkedin"
                         },
                     ]
