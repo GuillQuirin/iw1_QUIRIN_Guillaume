@@ -5,11 +5,10 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Security\Core\User\UserInterface;
-
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Repository\CandidatRepository")
+ * @ORM\Entity()
  * @ORM\Table(name="candidat")
  */
 
@@ -20,9 +19,19 @@ class Candidat{
     * @ORM\Id
     * @ORM\GeneratedValue(strategy="AUTO")
     */
-        protected $id;
+    protected $id;
   
-	/**
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    protected $prenom;
+
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    protected $nom;
+	
+    /**
      * @ORM\Column(type="string", length=100)
      */
 	protected $description;
@@ -39,7 +48,7 @@ class Candidat{
     protected $linkedin;
 	
 	/**
-     * @ORM\Column(type="string", length=5)
+     * @ORM\Column(type="string", length=100)
      */
 	protected $cv;
 	
@@ -49,14 +58,15 @@ class Candidat{
      */
 	protected $photo;
 	
-    /**/
-    // @ORM\OneToMany(targetEntity="Staff", mappedBy="user")
-    /**/
-    //protected $tocken;
+    /**
+    * @ORM\OneToMany(targetEntity="Projet", mappedBy="candidat_id") 
+    */
+    protected $projets;
 
 
     public function __construct()
     {
+        $this->projets = new ArrayCollection();
     }
 
     function getDescription() {
@@ -75,10 +85,6 @@ class Candidat{
         return $this->photo;
     }
 
-    function getTocken() {
-        return $this->tocken;
-    }
-
     function setDescription($description) {
         $this->description = $description;
     }
@@ -93,11 +99,5 @@ class Candidat{
 
     function setPhoto($photo) {
         $this->photo = $photo;
-    }
-
-    function setTocken($tocken) {
-        $this->tocken = $tocken;
-    }
-
-   
+    } 
 }

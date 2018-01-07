@@ -19,11 +19,9 @@ server.post('/api/messages', connector.listen());
 
 //Initialisation du bot
 var bot = new botbuilder.UniversalBot(connector, function(session){
-    session.beginDialog('greetings');
-
     //Connexion à l'API Web
     var http = require('https');
-    var url = 'https://chatbot.gqui.eu/GET/123';
+    var url = 'https://chatbot.gqui.eu';
     http.get(url, function(res){
         var body = '';
 
@@ -32,16 +30,17 @@ var bot = new botbuilder.UniversalBot(connector, function(session){
         });
 
         res.on('end', function(){
-            session.dialogData.candidat = body.eleve;
-            session.dialogData.Projects = body.projects;
-            console.log(body);
+            var obj = JSON.parse(body);
+            session.conversationData.candidat = obj.candidat;
+            session.conversationData.Projects = obj.projects;
+            session.beginDialog('greetings');
         });
     }).on('error', function(e){
           session.send("Got an error: ", e);
           console.log("Got an error: ", e);
     });
 });
-
+ 
 // LUIS
 var luisEndpoint = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/cd3f7ca0-4476-49a4-9dbb-99ff2d2ceddb?subscription-key=54f43e16c91e4f269766cf9ee8934e6b&verbose=true&timezoneOffset=0";
 var luiRecognizer = new botbuilder.LuisRecognizer(luisEndpoint);
@@ -52,7 +51,8 @@ bot.dialog('projectsSearch', [
     function(session, args, next){
         //TODO
         //Duplication du tableau Projects
-        var tableau = session.dialogData.Projects.slice(0);
+        var tableau = session.conversationData.Projects.slice(0);
+//        console.log(tableau);
         //
 
         var list = [];
@@ -63,13 +63,15 @@ bot.dialog('projectsSearch', [
                 entities.forEach(function(entity){
                     //Parcours des projets
                     tableau.forEach(function(project){
-                        var index = project.language.indexOf(entity.entity);
-                        //On déplace le projet dans un nouveau tableau 
-                        if(index !== -1){
-                            list.push(tableau[index]);
-                            tableau.splice(index,1);
-                            return;
-                        }
+                        //Parcours des langages
+                        project.langages.forEach(function(langage){
+                            //On déplace le projet dans un nouveau tableau
+                            if(langage.nom.toLowerCase().localeCompare(entity.entity.toLowerCase())==0){
+                                list.push(project);
+                                tableau.splice(project,1);
+                                return;
+                            }
+                        });
                     });
                 });
                 session.send(displayProject(list, session));
@@ -87,32 +89,10 @@ bot.dialog('projectsSearch', [
     confirmPrompt: 'Etes-vous sur ?'
 });
 
-/*
-var Projects = [
-    {
-        "language": ["php","laravel","java"],
-        "title": "Club littéraire numérique",
-        "first": 1,
-        "subtitle": "Projet Laravel de 4eme année",
-        "text": "Réalisation d'un salon virtuel permettant aux utilisateurs de débattre d'une oeuvre",
-        "image": "https://www.gqui.eu/wp-content/uploads/2017/08/screencapture-club-des-critiques.png",
-        "url": "http://club-des-critiques.gqui.eu"
-    },
-    {
-        "language": ["java", "mvc"],
-        "title": "Raccourcisseur d'URL",
-        "first": 0,
-        "subtitle": "Projet Java / JEE de 4eme année",
-        "text": "Réalisation d'une application JEE sous Tomcat générant des URL raccourcies",
-        "image": "http://petersapparel.parseapp.com/img/whiteshirt.png",
-        "url": "http://club-des-critiques.gqui.eu"
-    },
-];*/
-
 /* Récupération des projets principaux */
 bot.dialog('projectsList', function (session) {
     session.send('Voici les principaux projets développés par le candidat :');   
-    session.send(displayProject(session.dialogData.Projects, session));
+    session.send(displayProject(session.conversationData.Projects, session));
     session.endDialog();
 }).triggerAction({ matches: /^(projects)/i });
 
@@ -168,7 +148,7 @@ var menuItems = {
 //Accueil
 bot.dialog('greetings', [
 	function (session,args, next){
-        session.send("Bienvenue sur le chatbot-CV de "+session.dialogData.candidat.prenom+" "+session.dialogData.candidat.nom+", voici un aperçu de ce que vous pouvez faire : ");
+        session.send("Bienvenue sur le chatbot-CV de "+session.conversationData.candidat.prenom+" "+session.conversationData.candidat.nom+", voici un aperçu de ce que vous pouvez faire : ");
         session.beginDialog("Menu");
     },
 	function (session, results){
@@ -199,14 +179,7 @@ bot.dialog("Menu", [
 /* Dialogue de la description */
 bot.dialog('resumeDescription', [
 	function (session, args, next){
-        /*var msg = new botbuilder.Message(session)
-            .text("Here you go:")
-            .attachments([{
-                contentType: "image/jpeg",
-                contentUrl: "http://www.theoldrobots.com/images62/Bender-18.JPG"
-            }]);
-        session.send(msg);*/
-		session.send(session.dialogData.candidat.description);
+		session.send(session.conversationData.candidat.description);
         session.endDialog();
     }
 ]);
@@ -229,7 +202,7 @@ bot.dialog('resumeCard', [
                             "items": [
                                 {
                                     "type": "TextBlock",
-                                    "text": session.dialogData.candidat.metier,
+                                    "text": session.conversationData.candidat.metier,
                                     "weight": "bolder",
                                     "size": "large",
                                     "horizontalAlignment": "center"
@@ -243,7 +216,7 @@ bot.dialog('resumeCard', [
                                             "items": [
                                                 {
                                                     "type": "Image",
-                                                    "url": session.dialogData.candidat.picture,
+                                                    "url": session.conversationData.candidat.picture,
                                                     "size": "medium",
                                                     "style": "person",
                                                     "horizontalAlignment": "center"
@@ -256,7 +229,7 @@ bot.dialog('resumeCard', [
                                             "items": [
                                                 {
                                                     "type": "TextBlock",
-                                                    "text": session.dialogData.candidat.nom+" "+session.dialogData.candidat.prenom,
+                                                    "text": session.conversationData.candidat.nom+" "+session.conversationData.candidat.prenom,
                                                     "weight": "bolder",
                                                     "wrap": true,
                                                     "size": "medium"
@@ -272,7 +245,7 @@ bot.dialog('resumeCard', [
                             "items": [
                                 {
                                     "type": "TextBlock",
-                                    "text": session.dialogData.candidat.description,
+                                    "text": session.conversationData.candidat.description,
                                     "wrap": true
                                 },
                                 {
@@ -280,15 +253,15 @@ bot.dialog('resumeCard', [
                                     "facts": [
                                         {
                                             "title": "Entreprise actuelle :",
-                                            "value": session.dialogData.candidat.entreprise
+                                            "value": session.conversationData.candidat.entreprise
                                         },
                                         {
                                             "title": "Disponibilité :",
-                                            "value": session.dialogData.candidat.disponibilite
+                                            "value": session.conversationData.candidat.disponibilite
                                         },
                                         {
                                             "title": "Localisation :",
-                                            "value": session.dialogData.candidat.location
+                                            "value": session.conversationData.candidat.location
                                         }
                                     ]
                                 }
@@ -298,12 +271,12 @@ bot.dialog('resumeCard', [
                     "actions": [
                         {
                             "type": "Action.OpenUrl",
-                            "url": session.dialogData.candidat.cv,
+                            "url": session.conversationData.candidat.cv,
                             "title": "Accéder au CV (URL)"
                         },
                         {
                             "type": "Action.OpenUrl",
-                            "url": session.dialogData.candidat.linkedin,
+                            "url": session.conversationData.candidat.linkedin,
                             "title": "Accéder au Linkedin"
                         },
                     ]
