@@ -46,15 +46,21 @@ class ProjetForm extends AbstractType{
                             'class'=>'form-control'
                     ],
                 ])
-                 ->add('url', TextType::class, [
+                ->add('url', TextType::class, [
                     'label'=>'URL présentant le projet en ligne :',
                      'attr' => [
                             'class'=>'form-control'
                     ],
                 ])
+                ->add('apilangages', TextType::class, [
+                    'label'=>'Mots-clés associés (séparés par une virgule) :',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
                 ->add('save', SubmitType::class, array(
-                'label' => "Valider",
-                'attr' => array('class' => 'btn btn-primary')
+                    'label' => "Valider",
+                    'attr' => array('class' => 'btn btn-primary')
                 ));
     }
     public function configureOption(OptionsResolver $resolver) {

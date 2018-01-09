@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 class Langage {
 
-	/**
+    /**
     * @ORM\Column(type="integer")
     * @ORM\Id
     * @ORM\GeneratedValue(strategy="AUTO")
@@ -40,11 +40,19 @@ class Langage {
         return $this->nom;
     }
 
+    function getProjet_id() {
+        return $this->projet_id;
+    }
+
     function setId($id) {
         $this->id = $id;
     }
 
     function setNom($nom) {
         $this->nom = $nom;
+    }
+
+    function setProjet_id($projet_id) {
+        $this->projet_id = $projet_id;
     }
 }

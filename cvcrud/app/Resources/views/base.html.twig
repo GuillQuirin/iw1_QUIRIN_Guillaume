@@ -10,15 +10,14 @@
         <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     </head>
     <body>
-        {% block body %}
-             
-        {% endblock %}
+        <div class="container">
+            {% block body %}{% endblock %}
+        </div>
         
-        {% block javascripts %}
-            <script src="{{ asset('js/jquery.min.js') }}"></script>
-            <script src="{{ asset('js/bootstrap.js') }}"></script>
-            <script src="{{ asset('DataTables/datatables.min.js') }}"></script>
-            <script src="{{ asset('js/script.js') }}"></script>
-        {% endblock %}
+        <script src="{{ asset('js/jquery.min.js') }}"></script>
+        <script src="{{ asset('js/bootstrap.js') }}"></script>
+        <script src="{{ asset('DataTables/datatables.min.js') }}"></script>
+        <script src="{{ asset('js/script.js') }}"></script>
+        {% block javascripts %}{% endblock %}
     </body>
 </html>

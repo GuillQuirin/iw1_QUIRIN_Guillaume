@@ -22,17 +22,29 @@ class CandidatForm extends AbstractType{
      */
     public function buildForm(FormBuilderInterface $builder, array $options) {
         $builder
-                 ->add('description', TextType::class, [
+                ->add('nom', TextType::class, [
+                    'label'=>'Nom',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
+                ->add('prenom', TextType::class, [
+                    'label'=>'Prenom',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
+                ->add('description', TextType::class, [
                     'label'=>'Description',
                      'attr' => [
                             'class'=>'form-control'
                     ],
                 ])
                 ->add('email', EmailType::class, [
-                    'label'=>'Mettre en avant ce projet? ',
+                    'label'=>'Adresse email',
                     'required'=>false,
                     'attr'=>[
-                        'class'=>'form-check-input'
+                        'class'=>'form-control'
                     ],
                 ])
                  ->add('linkedin', TextType::class, [
@@ -47,19 +59,18 @@ class CandidatForm extends AbstractType{
                             'class'=>'form-control'
                     ],
                 ])
-                 ->add('photo', FileType::class, [
+                 ->add('photo', TextType::class, [
                     'label'=>'photo : ',
                      'attr' => [
                             'class'=>'form-control'
                     ],
                 ])
                 ->add('save', SubmitType::class, array(
-                'label' => "Valider",
-                'attr' => array('class' => 'btn btn-primary')
+                    'label' => "Valider",
+                    'attr' => array('class' => 'btn btn-primary')
                 ));
     }
     public function configureOption(OptionsResolver $resolver) {
         $resolver->setDefaults(['data_class'=>'AppBundle\Entity\Candidat']);
-        
     }
 }

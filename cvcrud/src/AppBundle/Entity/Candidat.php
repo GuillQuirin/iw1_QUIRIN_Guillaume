@@ -30,34 +30,34 @@ class Candidat{
      * @ORM\Column(type="string", length=100)
      */
     protected $nom;
-	
+    
     /**
      * @ORM\Column(type="string", length=100)
      */
-	protected $description;
-	
+    protected $description;
+    
        
-	/**
+    /**
      * @ORM\Column(type="string", length=100)
      */
-	protected $email;
+    protected $email;
         
     /**
     * @ORM\Column(type="string", length=200)
     */
     protected $linkedin;
-	
-	/**
+    
+    /**
      * @ORM\Column(type="string", length=100)
      */
-	protected $cv;
-	
-	
-	/**
+    protected $cv;
+    
+    
+    /**
      * @ORM\Column(type="string", length=100)
      */
-	protected $photo;
-	
+    protected $photo;
+    
     /**
     * @ORM\OneToMany(targetEntity="Projet", mappedBy="candidat_id") 
     */
@@ -67,6 +67,14 @@ class Candidat{
     public function __construct()
     {
         $this->projets = new ArrayCollection();
+    }
+
+    function getPrenom() {
+        return $this->prenom;
+    }
+
+    function getNom() {
+        return $this->nom;
     }
 
     function getDescription() {
@@ -85,6 +93,18 @@ class Candidat{
         return $this->photo;
     }
 
+    function getEmail() {
+        return $this->email;
+    }
+
+    function setNom($nom) {
+        $this->nom = $nom;
+    }
+
+    function setPrenom($prenom) {
+        $this->prenom = $prenom;
+    }
+
     function setDescription($description) {
         $this->description = $description;
     }
@@ -99,5 +119,9 @@ class Candidat{
 
     function setPhoto($photo) {
         $this->photo = $photo;
+    } 
+
+    function setEmail($email) {
+        $this->email = $email;
     } 
 }

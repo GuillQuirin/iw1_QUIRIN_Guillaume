@@ -6,6 +6,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection; 
 
 /**
  * @ORM\Entity()
@@ -14,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 class Projet{
 
-	/**
+    /**
     * @ORM\Column(type="integer")
     * @ORM\Id
     * @ORM\GeneratedValue(strategy="AUTO")
@@ -57,6 +58,8 @@ class Projet{
     */
     protected $langages;
 
+    protected $apilangages;
+
     protected $listlangages;
 
     public function __construct(){
@@ -87,8 +90,16 @@ class Projet{
         return $this->url;
     }
 
+    function getApilangages() {
+        return $this->apilangages;
+    }
+
     function getListlangages() {
         return $this->listlangages;
+    }
+
+    function getCandidat_id(){
+        return $this->candidat_id;
     }
 
     function setId($id) {
@@ -117,5 +128,13 @@ class Projet{
 
     function setListlangages($listlangages) {
         $this->listlangages = $listlangages;
+    }  
+
+    function setApilangages($apilangages) {
+        $this->apilangages = $apilangages;
+    }  
+
+    function setCandidat_id($candidat_id) {
+        $this->candidat_id = $candidat_id;
     }  
 }

@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <style>
+        .flash-notice{
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    
+    {% for message in app.flashes('success') %}
+        <div class="flash-notice">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="row">
+        <h2 class="text-center">Administration des informations du chatbot</h2>
+    </div>
+    <hr>
+    <div class="row">
+        <h4 class="">Modifier les informations du candidat :</h4>
+        <div class="col-md-12">
+            {{ form(formCandidat, {'method': 'POST'}) }}
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <h4 class="">Liste des projets développés</h4>
+        <div class="col-md-12">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#projetModal">
+                Ajouter un nouveau projet
+            </button>
+            <table class="table table-striped datatable_esgi">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Modifier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for projet in projets %}
+                        <tr>
+                            <td class="col s3">
+                                {{projet.titre}}
+                            </td>
+                            <td class="col s3">
+                                {{projet.description}}
+                            </td>
+                            <td class="col s3">
+                                <a href="#" class="text-lighten-2" data-toggle="modal" data-target="#projetModal" 
+                                    data-id="{{projet.id}}" data-titre="{{projet.titre}}" data-description="{{projet.description}}" 
+                                    data-premium="{{projet.premium}}" data-image="{{projet.image}}" data-url="{{projet.url}}" data-apilangages="{{projet.apilangages}}">
+                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="projetModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+            <h5 class="modal-title text-center">Gestion d'un projet</h5>
+          </div>
+          <div class="modal-body">
+            {{ form(formProjet, {'method': 'POST'}) }}   
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-danger suppr">Supprimer le projet</a>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            $('[data-toggle="modal"]').click(function(){
+
+                $('#projetModal input#projet_form_id').val('');
+                $('#projetModal input#projet_form_titre').val('');
+                $('#projetModal input#projet_form_description').val('');
+                $('#projetModal input#projet_form_premium').val('');
+                $('#projetModal input#projet_form_image').val('');
+                $('#projetModal input#projet_form_url').val('');
+                $('#projetModal input#projet_form_apilangages').val('');
+
+                $("#projetModal form").attr('action',"/admin");
+                $('#projetModal a.suppr').hide().attr('href', '#');
+
+                //Modification d'un projet
+                if($(this).is('a')){
+                    var id = $(this).data('id');
+                    var titre = $(this).data('titre');
+                    var description = $(this).data('description');
+                    var premium = $(this).data('premium');
+                    var image = $(this).data('image');
+                    var url = $(this).data('url');
+                    var apilangages = $(this).data('apilangages');
+
+                    $("#projetModal form").attr('action',"/projet/edit/"+id);
+                    $('#projetModal input#projet_form_id').val(id);
+                    $('#projetModal input#projet_form_titre').val(titre);
+                    $('#projetModal input#projet_form_description').val(description);
+                    $('#projetModal input#projet_form_premium').val(premium);
+                    $('#projetModal input#projet_form_image').val(image);
+                    $('#projetModal input#projet_form_url').val(url);
+                    $('#projetModal input#projet_form_apilangages').val(apilangages);
+
+                    $('#projetModal a.suppr').show().attr('href', '/admin/delete_projet/'+id);
+                }
+            });
+
+            $('.suppr').click(function(){
+                return confirm("Etes-vous certain de vouloir supprimer ce projet ?");
+            });
+        });
+    </script
+{% endblock %}
