@@ -11,7 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class ProjetForm extends AbstractType{
@@ -27,11 +27,18 @@ class ProjetForm extends AbstractType{
                             'class'=>'form-control'
                     ],
                 ])
-                ->add('premium', CheckboxType::class, [
+                ->add('premium', ChoiceType::class, [
                     'label'=>'Mettre en avant ce projet? ',
-                    'required'=>false,
+                    'required'=>true,
+                    'expanded'=>false,
+                    'multiple'=>false,
+                    'choices'=>[
+                        'Oui'=>1,
+                        'Non'=>0
+                    ],
+                    'data'=>0,
                     'attr'=>[
-                        'class'=>'form-check-input'
+                        'class'=>'form-control'
                     ],
                 ])
                  ->add('description', TextType::class, [

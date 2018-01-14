@@ -6,6 +6,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Type;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection; 
 
 /**
  * @ORM\Entity()
@@ -30,6 +31,21 @@ class Candidat{
      * @ORM\Column(type="string", length=100)
      */
     protected $nom;
+
+    /**
+     * @ORM\Column(type="string", length=200)
+     */
+    protected $entreprise;
+
+    /**
+     * @ORM\Column(type="datetime", length=100)
+     */
+    protected $date_dispo;
+
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    protected $localisation;
     
     /**
      * @ORM\Column(type="string", length=100)
@@ -48,13 +64,13 @@ class Candidat{
     protected $linkedin;
     
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=200)
      */
     protected $cv;
     
     
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=200)
      */
     protected $photo;
     
@@ -69,6 +85,10 @@ class Candidat{
         $this->projets = new ArrayCollection();
     }
 
+    function getId() {
+        return $this->id;
+    }
+
     function getPrenom() {
         return $this->prenom;
     }
@@ -79,6 +99,18 @@ class Candidat{
 
     function getDescription() {
         return $this->description;
+    }
+
+    function getEntreprise() {
+        return $this->entreprise;
+    }
+
+    function getDateDispo() {
+        return $this->date_dispo;
+    }
+
+    function getLocalisation() {
+        return $this->localisation;
     }
 
     function getLinkedin() {
@@ -97,6 +129,10 @@ class Candidat{
         return $this->email;
     }
 
+    function setId($id) {
+        $this->id = $id;
+    }
+
     function setNom($nom) {
         $this->nom = $nom;
     }
@@ -107,6 +143,18 @@ class Candidat{
 
     function setDescription($description) {
         $this->description = $description;
+    }
+
+    function setEntreprise($entreprise) {
+        $this->entreprise = $entreprise;
+    }
+
+    function setDateDispo($date_dispo) {
+        $this->date_dispo = $date_dispo;
+    }
+
+    function setLocalisation($localisation) {
+        $this->localisation = $localisation;
     }
 
     function setLinkedin($linkedin) {

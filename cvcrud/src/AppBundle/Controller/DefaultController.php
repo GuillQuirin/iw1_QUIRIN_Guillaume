@@ -23,24 +23,24 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
+        $em = $this->getDoctrine()->getManager();
+        $connection = $em->getConnection();
+
         $array = [];
-        $id = 1;
+        $candidat = $em->getRepository('AppBundle:Candidat')->findOneBy([]) ?? new Candidat();
         $encoders = array(new XmlEncoder(), new JsonEncoder());
         $normalizers = array(new ObjectNormalizer());
         $serializer = new Serializer($normalizers, $encoders);
-
-        $em = $this->getDoctrine()->getManager();
-        $connection = $em->getConnection();
        
         //Candidat
         $statement = $connection->prepare("SELECT * FROM candidat WHERE id=:id");
-        $statement->bindValue('id', $id);
+        $statement->bindValue('id', $candidat->getId());
         $statement->execute();
         $array['candidat'] = $statement->fetch();
 
         //Projets
         $statement = $connection->prepare("SELECT * FROM projet WHERE candidat_id=:id");
-        $statement->bindValue('id', $id);
+        $statement->bindValue('id', $candidat->getId());
         $statement->execute();
         $array['projects'] = $statement->fetchAll();
 

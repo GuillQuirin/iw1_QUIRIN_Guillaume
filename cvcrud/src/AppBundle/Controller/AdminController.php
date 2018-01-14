@@ -34,12 +34,12 @@ class AdminController extends Controller{
     {
         $em = $this->getDoctrine()->getManager();
 
-        $candidat = $em->getRepository('AppBundle:Candidat')->find(1);
+        $candidat = $em->getRepository('AppBundle:Candidat')->findOneBy([]) ?? new Candidat();
         $formCandidat = $this->createForm(CandidatForm::class, $candidat);
         
         //MaJ Candidat
         $formCandidat->handleRequest($request);
-        if($formCandidat->isValid()){
+        if($formCandidat->isSubmitted() && $formCandidat->isValid()){
            $em->persist($candidat);
            $em->flush();
            $this->addFlash('success', "Les informations du candidat ont été correctement modifiées.");
@@ -49,7 +49,7 @@ class AdminController extends Controller{
         $projet = new Projet();
         $formProjet = $this->createForm(ProjetForm::class, $projet);
         $formProjet->handleRequest($request);
-        if($formProjet->isValid()){
+        if($formProjet->isSubmitted() && $formProjet->isValid()){
            $em->persist($projet);
            $projet->setCandidat_id($candidat);
            $em->flush();
@@ -61,7 +61,7 @@ class AdminController extends Controller{
             foreach ($keywords as $keyword) {
                 $langage = new Langage();
                 $em->persist($langage);
-                $langage->setNom($keyword);
+                $langage->setNom(trim($keyword));
                 $langage->setProjet_id($projet);
                 $em->flush();
             }

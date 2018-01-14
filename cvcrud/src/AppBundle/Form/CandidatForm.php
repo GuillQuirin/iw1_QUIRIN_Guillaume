@@ -11,6 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -40,6 +41,25 @@ class CandidatForm extends AbstractType{
                             'class'=>'form-control'
                     ],
                 ])
+                ->add('entreprise', TextType::class, [
+                    'label'=>'Entreprise actuelle',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
+                ->add('date_dispo', DateType::class, [
+                    'label'=>'Date de disponibilité',
+                    'widget' => 'single_text',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
+                ->add('localisation', TextType::class, [
+                    'label'=>'Localisation souhaitée',
+                     'attr' => [
+                            'class'=>'form-control'
+                    ],
+                ])
                 ->add('email', EmailType::class, [
                     'label'=>'Adresse email',
                     'required'=>false,
@@ -54,13 +74,13 @@ class CandidatForm extends AbstractType{
                     ],
                 ])
                  ->add('cv', TextType::class, [
-                    'label'=>'CV :',
+                    'label'=>'Lien du CV :',
                      'attr' => [
                             'class'=>'form-control'
                     ],
                 ])
                  ->add('photo', TextType::class, [
-                    'label'=>'photo : ',
+                    'label'=>'Lien de la photo : ',
                      'attr' => [
                             'class'=>'form-control'
                     ],

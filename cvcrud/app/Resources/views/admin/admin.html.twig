@@ -7,8 +7,9 @@
             color: red;
         }
         iframe{
-            height: 350px;
+            height: 750px;
             width: 100%;
+            border: 1px solid;
         }
     </style>
 {% endblock %}
@@ -68,6 +69,7 @@
             </table>
         </div>
     </div>
+    <hr>
     <iframe src='https://webchat.botframework.com/embed/cv-esgi?s=25f8hii-trc.cwA.lUc.w1LiPRLwbLWdDm2LP4oYhj_MIVR4TsJghKjDaMvq8Cs'></iframe>
     <!-- Modal -->
     <div class="modal fade" id="projetModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -98,7 +100,7 @@
                 $('#projetModal input#projet_form_id').val('');
                 $('#projetModal input#projet_form_titre').val('');
                 $('#projetModal input#projet_form_description').val('');
-                $('#projetModal input#projet_form_premium').val('');
+                //$('#projetModal select#projet_form_premium').val('');
                 $('#projetModal input#projet_form_image').val('');
                 $('#projetModal input#projet_form_url').val('');
                 $('#projetModal input#projet_form_apilangages').val('');
@@ -120,7 +122,14 @@
                     $('#projetModal input#projet_form_id').val(id);
                     $('#projetModal input#projet_form_titre').val(titre);
                     $('#projetModal input#projet_form_description').val(description);
-                    $('#projetModal input#projet_form_premium').val(premium);
+                    $('#projetModal select#projet_form_premium option').each(function(){
+                        if(!isNaN(parseInt(premium)) && $(this).val()==1)
+                            $(this).attr('selected','selected');
+                        else if(isNaN(parseInt(premium)) && $(this).val()==0)
+                            $(this).attr('selected','selected');
+                        else
+                            $(this).attr('selected',false);
+                    });
                     $('#projetModal input#projet_form_image').val(image);
                     $('#projetModal input#projet_form_url').val(url);
                     $('#projetModal input#projet_form_apilangages').val(apilangages);
