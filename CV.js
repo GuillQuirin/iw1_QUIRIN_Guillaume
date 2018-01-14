@@ -1,6 +1,11 @@
 var restify = require('restify');
-var botbuilder = require('botbuilder');
+var builder = require('botbuilder');
 var cognitiveservices = require('botbuilder-cognitiveservices');
+
+var express=require('express');
+var nodemailer = require("nodemailer");
+var app=express();
+
 
 //setup the restify server
 var server = restify.createServer();
@@ -9,16 +14,16 @@ server.listen(process.env.port || process.env.PORT || 8888, function(){
 });
 
 //create chat connector
-var connector = new botbuilder.ChatConnector({
-	appId: /*MICROSOFT_APP_ID*/process.env.APP_ID,
-	appPassword: /*MICROSOFT_APP_PASSWORD*/process.env.APP_SECRET
+var connector = new builder.ChatConnector({
+	appId: "***********",
+	appPassword: "***********"
 });
 
 // listen for user inputs
 server.post('/api/messages', connector.listen());
 
 //Initialisation du bot
-var bot = new botbuilder.UniversalBot(connector, function(session){
+var bot = new builder.UniversalBot(connector, function(session){
     //Connexion à l'API Web
     var http = require('https');
     var url = 'https://chatbot.gqui.eu';
@@ -43,17 +48,14 @@ var bot = new botbuilder.UniversalBot(connector, function(session){
  
 // LUIS
 var luisEndpoint = "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/cd3f7ca0-4476-49a4-9dbb-99ff2d2ceddb?subscription-key=54f43e16c91e4f269766cf9ee8934e6b&verbose=true&timezoneOffset=0";
-var luiRecognizer = new botbuilder.LuisRecognizer(luisEndpoint);
+var luiRecognizer = new builder.LuisRecognizer(luisEndpoint);
 bot.recognizer(luiRecognizer);
 
 /* Recherche d'un mot clé avec LUIS */
 bot.dialog('projectsSearch', [
     function(session, args, next){
-        //TODO
         //Duplication du tableau Projects
         var tableau = session.conversationData.Projects.slice(0);
-//        console.log(tableau);
-        //
 
         var list = [];
         if(typeof args!="undefined" && typeof args.intent!="undefined"){
@@ -63,15 +65,13 @@ bot.dialog('projectsSearch', [
                 entities.forEach(function(entity){
                     //Parcours des projets
                     tableau.forEach(function(project){
-                        //Parcours des langages
-                        project.langages.forEach(function(langage){
-                            //On déplace le projet dans un nouveau tableau
-                            if(langage.nom.toLowerCase().localeCompare(entity.entity.toLowerCase())==0){
-                                list.push(project);
-                                tableau.splice(project,1);
-                                return;
-                            }
-                        });
+                        var index = project.language.indexOf(entity.entity);
+                        //On déplace le projet dans un nouveau tableau 
+                        if(index !== -1){
+                            list.push(tableau[index]);
+                            tableau.splice(index,1);
+                            return;
+                        }
                     });
                 });
                 session.send(displayProject(list, session));
@@ -99,24 +99,25 @@ bot.dialog('projectsList', function (session) {
 
 /* Affcihage d'une liste de projet sous forme d'Adaptative Card */
 function displayProject(list, session){
-    var msg = new botbuilder.Message(session);
-    msg.attachmentLayout(botbuilder.AttachmentLayout.carousel);
+    var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel);
 
     var listProjects = [];
     for(var index in list){
-        var HeroCard = new botbuilder.HeroCard(session)
-                            .title(list[index].title)
-                            .subtitle(list[index].subtitle)
-                            .text(list[index].text)
-                            .images([botbuilder.CardImage.create(session, list[index].image)])
+        console.log(list[index].image);
+        var HeroCard = new builder.HeroCard(session)
+                            .title(list[index].titre)
+                            //.subtitle(list[index].subtitle)
+                            .text(list[index].description)
+                            .images([builder.CardImage.create(session, list[index].image)])
                             .buttons([
-                                botbuilder.CardAction.openUrl(session, list[index].url, "Accéder au projet")
+                                builder.CardAction.openUrl(session, list[index].url, "Accéder au projet")
                             ]);
         listProjects.push(HeroCard);
     }
 
     if(listProjects.length<=0)
-        msg = "Aucun projet n'a été trouvé.";
+        msg = "Désolé, aucun projet n'a été trouvé.";
     else
         msg.attachments(listProjects);
 
@@ -156,12 +157,12 @@ bot.dialog('greetings', [
 	}
 ]);
 
-/* ----DIALOGUES---- */
+/* -----------------DIALOGUES---------------- */
 
 /* Dialogue du menu */
 bot.dialog("Menu", [
     function(session){
-        botbuilder.Prompts.choice(session, "Que souhaitez-vous faire ? ", menuItems, { listStyle: botbuilder.ListStyle.button });
+        builder.Prompts.choice(session, "Que souhaitez-vous faire ? ", menuItems, { listStyle: builder.ListStyle.button });
     },
     function(session, results){
         if(results.response){
@@ -169,7 +170,6 @@ bot.dialog("Menu", [
         }
     },
     function(session){
-        //session.endDialog();
         session.replaceDialog("Menu", { reprompt: true });
     }
 ]).triggerAction({
@@ -296,19 +296,48 @@ bot.dialog('resumeContact', [
         session.send('Si vous souhaitez contacter le candidat, vous pouvez nous transmettre vos coordonnées.');
         session.beginDialog('askName');
     },
-    function (session, results){
-        session.dialogData.nom = results.response;
-        session.beginDialog('askMethod');
+    function (session){
+        session.beginDialog('askEmail');
     },
-    function (session, results){
-        session.beginDialog(contactItems[results.response.entity].item);
-    },
-    function (session, results){
-        session.dialogData.coord = results.response;
+    function (session){
         session.beginDialog('askDate');
     },
-    function (session, results){
-        session.dialogData.date = results.response;
+    function (session){
+        session.beginDialog('askMethod');
+    },
+    function (session,results){
+        session.beginDialog(contactItems[results.response.entity].item);
+    },
+    function (session){
+        session.beginDialog('askConfirm');
+    },
+    function (session, results){        
+        var smtpTransport = nodemailer.createTransport({
+            service: "Gmail",
+            host: "smtp.gmail.com",
+            auth: {
+                user: "*********",
+                pass: "*********"
+            }
+        });
+
+        var mailOptions={
+            from: 'chatbot-gqui@noreply.com',
+            to : 'gui.quirin@hotmail.fr',
+            subject : 'Nouvel entretien souhaité',
+            html : session.privateConversationData.recap
+        };
+
+        smtpTransport.sendMail(mailOptions, function(error, response){
+            if(error){
+                console.log(error);
+                session.send("error");
+            }
+            else{
+                session.send("Le candidat a correctement été informé de votre message.");
+            }
+            smtpTransport.close();
+        });
         session.endDialog();
     },
 ]);
@@ -316,82 +345,120 @@ bot.dialog('resumeContact', [
 
 bot.dialog('askName', [
     function (session) {
-        botbuilder.Prompts.text(session, 'Votre nom/prénom : ');
+        builder.Prompts.text(session, 'Votre nom/prénom : ');
     },
     function (session, results) {
-        session.endDialogWithResult(results);
+        session.privateConversationData.nom = results.response;
+        session.endDialog();
+    }
+]);
+
+bot.dialog('askEmail', [
+    function (session) {
+        builder.Prompts.text(session, 'Votre adresse email : ');
+    },
+    function (session, results, next) {
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if(results && re.test(results.response)){
+            session.privateConversationData.email = results.response;
+            session.endDialog();
+        }
+        else{
+            session.send('Adresse email non valide, réessayer.')
+            session.replaceDialog('askEmail');
+        }
+    }
+]);
+
+bot.dialog('askDate', [
+    function (session) {
+        builder.Prompts.time(session, 'Proposez une date d\'entretien : ');
+    },
+    function (session, results) {
+        session.privateConversationData.date = results.response;
+        session.endDialog();
     }
 ]);
 
 bot.dialog('askMethod', [
     function (session) {
-        botbuilder.Prompts.choice(session, 'Moyen de contact ', contactItems, { listStyle: botbuilder.ListStyle.button });
+        builder.Prompts.choice(session, 'Moyen de contact souhaité pour une réponse', contactItems, { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
         session.endDialogWithResult(results);
     }
 ]);
 
-bot.dialog('askConfirm', [
-    function (session) {
-        botbuilder.Prompts.confirm(session, 'Confirmez-vous l\'ensemble des informations transmises ? ');
-    },
-    function (session, results) {
-        session.endDialog();
-    }
-]);
-
 /* Contact */
 var contactItems = {
-    "Email": {
-        item: "askEmail"
-    },
-    "Entretien": {
+    "Entretien sur place": {
         item: "askPlace"
     },
-    "Skype": {
-        item: "askSkype"
-    },
-    "Telephone": {
+    "Entretien télephonique": {
         item: "askPhone"
+    },
+    "Vidéoconférence sur Skype": {
+        item: "askSkype"
     }
 };
 
-bot.dialog('askEmail', [
+bot.dialog('askPlace', [
     function (session) {
-        botbuilder.Prompts.text(session, 'Votre adresse email : ');
+        builder.Prompts.text(session, 'Adresse de l\'entretien :');
     },
     function (session, results) {
-        session.endDialog();
-    }
-]);
-
-
-bot.dialog('askDate', [
-    function (session) {
-        botbuilder.Prompts.time(session, 'Une date d\'entretien : ');
-    },
-    function (session, results) {
+        session.privateConversationData.place = results.response;
         session.endDialog();
     }
 ]);
 
 bot.dialog('askPhone', [
     function (session) {
-        botbuilder.Prompts.number(session, 'Votre numéro de télephone : ');
+        builder.Prompts.text(session, 'Votre numéro de télephone : ');
     },
     function (session, results) {
-        console.log(results);
-        if(results.length<=10){
+        if(results && results.response.length<10){
             session.send("Un numéro de telephone doit comporter 10 chiffres.");
-            session.replaceDialog("Menu", { reprompt: true });
+            session.replaceDialog('askPhone');
         }
         else{
-
+            session.privateConversationData.phone = results.response;
+            session.endDialog();
         }
+    }
+]);
+
+bot.dialog('askSkype', [
+    function (session) {
+        builder.Prompts.text(session, 'Votre identifiant Skype : ');
+    },
+    function (session, results) {
+        session.privateConversationData.skype = results.response;
         session.endDialog();
     }
 ]);
+
+
+bot.dialog('askConfirm', [
+    function (session) {
+        var msg = "";
+        for(var data in session.privateConversationData){
+            msg+=data+": "+session.privateConversationData[data]+"<br>";
+        }
+        session.send("Récapitulatif :<br>"+msg);
+        session.privateConversationData.recap = msg;
+        builder.Prompts.choice(session, "Confirmez-vous ces informations ?", "oui|non", { listStyle: builder.ListStyle.button });
+    },
+    function (session, results) {
+        if(results && results.response.entity==1){
+            session.replaceDialog('resumeContact');
+        }
+        else{
+            session.endDialog();
+        }
+    }
+]);
+
 
 /*FIN*/
 bot.dialog('resumeExit', [
@@ -399,5 +466,7 @@ bot.dialog('resumeExit', [
         session.send("Au revoir");
         session.endConversation();
     }
-]);
+]).triggerAction({
+    matches: /^Quitter/i,
+});;
 
