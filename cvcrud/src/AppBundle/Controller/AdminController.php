@@ -108,7 +108,7 @@ class AdminController extends Controller{
            $this->addFlash('success', "Le projet a correctement été modifié");
 
            //Suppression des anciens langages
-            $langages = $em->getRepository('AppBundle:Langage')->find($id);
+            $langages = $em->getRepository('AppBundle:Langage')->findBy(['projet_id' => $id]);
             if($langages){
                 if(is_array($langages)){
                     foreach ($langages as $langage) {
