@@ -15,8 +15,8 @@ server.listen(process.env.port || process.env.PORT || 8888, function(){
 
 //create chat connector
 var connector = new builder.ChatConnector({
-	appId: "***********",
-	appPassword: "***********"
+	appId: "*************",
+	appPassword: "************"
 });
 
 // listen for user inputs
@@ -37,7 +37,7 @@ var bot = new builder.UniversalBot(connector, function(session){
         res.on('end', function(){
             var obj = JSON.parse(body);
             session.conversationData.candidat = obj.candidat;
-            session.conversationData.Projects = obj.projects;
+            session.conversationData.projects = obj.projects;
             session.beginDialog('greetings');
         });
     }).on('error', function(e){
@@ -55,7 +55,7 @@ bot.recognizer(luiRecognizer);
 bot.dialog('projectsSearch', [
     function(session, args, next){
         //Duplication du tableau Projects
-        var tableau = session.conversationData.Projects.slice(0);
+        var tableau = session.conversationData.projects.slice(0);
 
         var list = [];
         if(typeof args!="undefined" && typeof args.intent!="undefined"){
@@ -65,13 +65,18 @@ bot.dialog('projectsSearch', [
                 entities.forEach(function(entity){
                     //Parcours des projets
                     tableau.forEach(function(project){
-                        var index = project.language.indexOf(entity.entity);
-                        //On déplace le projet dans un nouveau tableau 
-                        if(index !== -1){
-                            list.push(tableau[index]);
-                            tableau.splice(index,1);
-                            return;
-                        }
+                        //Parcours des langages
+                        project.langages.forEach(function(langage){
+                            //On déplace le projet dans un nouveau tableau 
+                            if(langage.nom.toLowerCase() == entity.entity.toLowerCase()){
+                                var index = tableau.indexOf(project);
+                                if(index != -1){
+                                    list.push(tableau[index]);
+                                    tableau.splice(index,1);
+                                    return;
+                                }
+                            }
+                        });
                     });
                 });
                 session.send(displayProject(list, session));
@@ -92,7 +97,7 @@ bot.dialog('projectsSearch', [
 /* Récupération des projets principaux */
 bot.dialog('projectsList', function (session) {
     session.send('Voici les principaux projets développés par le candidat :');   
-    session.send(displayProject(session.conversationData.Projects, session));
+    session.send(displayProject(session.conversationData.projects, session));
     session.endDialog();
 }).triggerAction({ matches: /^(projects)/i });
 
@@ -104,7 +109,6 @@ function displayProject(list, session){
 
     var listProjects = [];
     for(var index in list){
-        console.log(list[index].image);
         var HeroCard = new builder.HeroCard(session)
                             .title(list[index].titre)
                             //.subtitle(list[index].subtitle)
@@ -187,6 +191,10 @@ bot.dialog('resumeDescription', [
 /* Dialogue de la carte de visite électronique */
 bot.dialog('resumeCard', [
     function(session, args, next){
+        var date = new Date(session.conversationData.candidat.date_dispo);
+        var year = date.getFullYear();
+        var month = ('0' + (date.getMonth()+1)).slice(-2);
+        var day = ('0' + date.getDate()).slice(-2);
         var card = {
             "type": "message",
             "text": "Vous trouverez ci-joint une carte de visite reconstituée : ",
@@ -200,13 +208,13 @@ bot.dialog('resumeCard', [
                         {
                             "type": "Container",
                             "items": [
-                                {
-                                    "type": "TextBlock",
-                                    "text": session.conversationData.candidat.metier,
-                                    "weight": "bolder",
-                                    "size": "large",
-                                    "horizontalAlignment": "center"
-                                },
+                                // {
+                                //     "type": "TextBlock",
+                                //     "text": session.conversationData.candidat.metier,
+                                //     "weight": "bolder",
+                                //     "size": "large",
+                                //     "horizontalAlignment": "center"
+                                // },
                                 {
                                     "type": "ColumnSet",
                                     "columns": [
@@ -216,7 +224,7 @@ bot.dialog('resumeCard', [
                                             "items": [
                                                 {
                                                     "type": "Image",
-                                                    "url": session.conversationData.candidat.picture,
+                                                    "url": session.conversationData.candidat.photo,
                                                     "size": "medium",
                                                     "style": "person",
                                                     "horizontalAlignment": "center"
@@ -257,11 +265,11 @@ bot.dialog('resumeCard', [
                                         },
                                         {
                                             "title": "Disponibilité :",
-                                            "value": session.conversationData.candidat.disponibilite
+                                            "value": day + "/" + month + "/" + year
                                         },
                                         {
                                             "title": "Localisation :",
-                                            "value": session.conversationData.candidat.location
+                                            "value": session.conversationData.candidat.localisation
                                         }
                                     ]
                                 }
@@ -309,6 +317,9 @@ bot.dialog('resumeContact', [
         session.beginDialog(contactItems[results.response.entity].item);
     },
     function (session){
+        session.beginDialog('askText');
+    },
+    function (session){
         session.beginDialog('askConfirm');
     },
     function (session, results){        
@@ -316,8 +327,8 @@ bot.dialog('resumeContact', [
             service: "Gmail",
             host: "smtp.gmail.com",
             auth: {
-                user: "*********",
-                pass: "*********"
+                user: "**********",
+                pass: "**********"
             }
         });
 
@@ -330,7 +341,6 @@ bot.dialog('resumeContact', [
 
         smtpTransport.sendMail(mailOptions, function(error, response){
             if(error){
-                console.log(error);
                 session.send("error");
             }
             else{
@@ -375,7 +385,7 @@ bot.dialog('askDate', [
         builder.Prompts.time(session, 'Proposez une date d\'entretien : ');
     },
     function (session, results) {
-        session.privateConversationData.date = results.response;
+        session.privateConversationData.date = results.response.entity;
         session.endDialog();
     }
 ]);
@@ -434,6 +444,17 @@ bot.dialog('askSkype', [
     },
     function (session, results) {
         session.privateConversationData.skype = results.response;
+        session.endDialog();
+    }
+]);
+
+
+bot.dialog('askText', [
+    function (session) {
+        builder.Prompts.text(session, 'Message libre à joindre au candidat : ');
+    },
+    function (session, results) {
+        session.privateConversationData.motif = results.response;
         session.endDialog();
     }
 ]);
